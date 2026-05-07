@@ -71,20 +71,17 @@ Car-plates-number-detection/
 │   ├── car2.jpg
 │   └── car3.jpg
 │
-└── assets/
-    └── screenshots/
-        ├── original_image.png
-        ├── preprocessing_steps.png
-        ├── blackhat_steps.png
-        ├── all_candidates.png
-        ├── top_3_candidates.png
-        └── best_plate_crop.png
+└── screenshot/
+    └───
+        ├── app.png
+        ├── best score.png
+        ├── Original vs Top 3 Candidates.png
 
-## Image Processing Pipeline
+
+Image Processing Pipeline
 
 The system follows a complete classical image processing pipeline to detect possible car plate regions from an input vehicle image.
 
-```text
 Input Image
 ↓
 Resize Image

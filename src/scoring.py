@@ -205,7 +205,7 @@ def rank_blackhat_candidates(candidates, binary_image, image_shape):
     return ranked_candidates
 
 
-def get_top_candidates(ranked_candidates, top_n=3):
+def get_top_candidates(ranked_candidates, top_n=5):
     """
     Return the top N ranked candidates.
     """
