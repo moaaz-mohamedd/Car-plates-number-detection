@@ -169,5 +169,116 @@ def blackhat_pipeline(gray_image):
         "dilated": dilated
     }
     
-    
-    
+def extract_candidates(binary_image, original_image):
+    """
+    Extract possible license plate regions from a binary image.
+
+    Input:
+        binary_image:
+            Image after edge detection / morphology.
+            White regions represent possible objects.
+
+        original_image:
+            The resized original image.
+            We use it to calculate image size and candidate ratios.
+
+    Output:
+        A list of candidate dictionaries.
+        Each candidate contains:
+            - box: (x, y, w, h)
+            - aspect_ratio
+            - area_ratio
+            - contour_area
+            - extent
+    """
+
+    contours, _ = cv2.findContours(
+        binary_image,
+        cv2.RETR_EXTERNAL,
+        cv2.CHAIN_APPROX_SIMPLE
+    )
+
+    H, W = original_image.shape[:2]
+    image_area = H * W
+
+    candidates = []
+
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+
+        if w == 0 or h == 0:
+            continue
+
+        contour_area = cv2.contourArea(contour)
+        rect_area = w * h
+
+        aspect_ratio = w / float(h)
+        area_ratio = rect_area / float(image_area)
+        extent = contour_area / float(rect_area)
+
+        # Basic filtering rules for license plate shape
+
+        # 1. Plate is usually wider than tall
+        if not (1.5 <= aspect_ratio <= 8.0):
+            continue
+
+        # 2. Plate should not be too small or too large
+        if not (0.0008 <= area_ratio <= 0.12):
+            continue
+
+        # 3. Ignore very tiny regions
+        if w < 45 or h < 12:
+            continue
+
+        # 4. Extent tells us how much the contour fills its rectangle
+        if extent < 0.10:
+            continue
+
+        candidate = {
+            "box": (x, y, w, h),
+            "aspect_ratio": aspect_ratio,
+            "area_ratio": area_ratio,
+            "contour_area": contour_area,
+            "extent": extent
+        }
+
+        candidates.append(candidate)
+
+    return candidates
+
+def draw_candidates(image, candidates, top_n=None):
+    """
+    Draw candidate bounding boxes on the image.
+
+    Green boxes represent candidate regions.
+    """
+
+    output = image.copy()
+
+    if top_n is None:
+        selected_candidates = candidates
+    else:
+        selected_candidates = candidates[:top_n]
+
+    for index, candidate in enumerate(selected_candidates):
+        x, y, w, h = candidate["box"]
+
+        cv2.rectangle(
+            output,
+            (x, y),
+            (x + w, y + h),
+            (0, 255, 0),
+            2
+        )
+
+        cv2.putText(
+            output,
+            str(index + 1),
+            (x, max(20, y - 8)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (0, 255, 0),
+            2
+        )
+
+    return output
