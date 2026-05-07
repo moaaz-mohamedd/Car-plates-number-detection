@@ -235,9 +235,10 @@ def extract_candidates(binary_image, original_image):
 
 def draw_candidates(image, candidates, top_n=None):
     """
-    Draw candidate bounding boxes on the image.
+    Draw candidate boxes.
 
-    Green boxes represent candidate regions.
+    Green = Blackhat candidate
+    Blue  = Canny candidate
     """
 
     output = image.copy()
@@ -250,21 +251,32 @@ def draw_candidates(image, candidates, top_n=None):
     for index, candidate in enumerate(selected_candidates):
         x, y, w, h = candidate["box"]
 
+        source = candidate.get("source", "unknown")
+
+        if source == "blackhat":
+            color = (0, 255, 0)  # green
+        elif source == "canny":
+            color = (255, 0, 0)  # blue in BGR
+        else:
+            color = (0, 255, 255)
+
+        label = f"{index + 1}-{source}"
+
         cv2.rectangle(
             output,
             (x, y),
             (x + w, y + h),
-            (0, 255, 0),
+            color,
             2
         )
 
         cv2.putText(
             output,
-            str(index + 1),
+            label,
             (x, max(20, y - 8)),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.7,
-            (0, 255, 0),
+            0.6,
+            color,
             2
         )
 
