@@ -173,23 +173,10 @@ def extract_candidates(binary_image, original_image):
     """
     Extract possible license plate regions from a binary image.
 
-    Input:
-        binary_image:
-            Image after edge detection / morphology.
-            White regions represent possible objects.
-
-        original_image:
-            The resized original image.
-            We use it to calculate image size and candidate ratios.
-
-    Output:
-        A list of candidate dictionaries.
-        Each candidate contains:
-            - box: (x, y, w, h)
-            - aspect_ratio
-            - area_ratio
-            - contour_area
-            - extent
+    Simple version:
+    - Find contours
+    - Build bounding boxes
+    - Keep only plate-like rectangles
     """
 
     contours, _ = cv2.findContours(
@@ -215,23 +202,22 @@ def extract_candidates(binary_image, original_image):
         aspect_ratio = w / float(h)
         area_ratio = rect_area / float(image_area)
         extent = contour_area / float(rect_area)
+        center_y = (y + h / 2) / H
 
-        # Basic filtering rules for license plate shape
-
-        # 1. Plate is usually wider than tall
-        if not (1.5 <= aspect_ratio <= 8.0):
+        if not (2.0 <= aspect_ratio <= 6.8):
             continue
 
-        # 2. Plate should not be too small or too large
-        if not (0.0008 <= area_ratio <= 0.12):
+        if not (0.0015 <= area_ratio <= 0.07):
             continue
 
-        # 3. Ignore very tiny regions
-        if w < 45 or h < 12:
+        if w < 70 or h < 18:
             continue
 
-        # 4. Extent tells us how much the contour fills its rectangle
-        if extent < 0.10:
+        if extent < 0.12:
+            continue
+
+        # مش شرط اللوحة في النص، بس غالبًا مش فوق خالص
+        if not (0.20 <= center_y <= 0.95):
             continue
 
         candidate = {
@@ -239,7 +225,8 @@ def extract_candidates(binary_image, original_image):
             "aspect_ratio": aspect_ratio,
             "area_ratio": area_ratio,
             "contour_area": contour_area,
-            "extent": extent
+            "extent": extent,
+            "center_y": center_y
         }
 
         candidates.append(candidate)
