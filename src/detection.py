@@ -93,7 +93,6 @@ def blackhat_pipeline(gray_image):
     enhanced = enhance_contrast(denoised)
 
     # Step 2: blackhat kernel
-    # مناسب لشكل اللوحات الأفقية
     rect_kernel = cv2.getStructuringElement(
         cv2.MORPH_RECT,
         (19, 5)
