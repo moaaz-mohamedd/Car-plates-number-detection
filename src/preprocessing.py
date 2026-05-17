@@ -38,7 +38,7 @@ def remove_noise(gray_image):
 
     Why Bilateral Filter?
     It smooths the image but keeps important edges,
-    which is useful for license plate boundaries.
+    which is useful for license plate boundaries. # gaussianBlur can blur edges, which may hurt detection performance.
     """
     denoised = cv2.bilateralFilter(gray_image, d=11, sigmaColor=17, sigmaSpace=17)
 
@@ -53,7 +53,7 @@ def enhance_contrast(gray_image):
 
     Why?
     It improves local contrast and makes plate details more visible,
-    especially in poor lighting conditions.
+    especially in poor lighting conditions or uneven illumination.its more better than histogram equalization
     """
     clahe = cv2.createCLAHE(
         clipLimit=2.0,
